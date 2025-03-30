@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年小胡说车年会抽奖</title>
+    <style>
+        body {
+            background-image: url('your_background_image.jpg');
+            background-size: cover;
+            background-position: center;
+            backdrop-filter: blur(5px);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            color: white;
+        }
+
+        h1 {
+            margin-top: 50px;
+            font-size: 36px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            margin: 20px;
+            cursor: pointer;
+            background-color: #ffcc00;
+            border: none;
+            border-radius: 5px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: none;
+            margin: 20px auto;
+        }
+
+        #result {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>2025年小胡说车年会抽奖</h1>
+    <div>
+        <button id="third-prize">抽三等奖</button>
+        <button id="second-prize" disabled>抽二等奖</button>
+        <button id="first-prize" disabled>抽一等奖</button>
+    </div>
+    <img id="apple-earphone" src="apple_earphone.jpg" alt="苹果耳机">
+    <img id="apple-watch" src="apple_watch.jpg" alt="苹果手表10">
+    <img id="apple-iphone" src="apple_iphone.jpg" alt="苹果14promax手机">
+    <div id="result"></div>
+    <audio id="lottery-sound" src="lottery_sound.mp3" preload="auto"></audio>
+    <audio id="firework-sound" src="firework_sound.mp3" preload="auto"></audio>
+
+    <script>
+        const participants = [
+            "杨笛", "赵浩", "高枕", "胡湧权", "吴红桥", "周戈军", "丁晓龙", "江官炜", "袁璟", "王攀",
+            "罗铮成", "王仲", "邓浩", "刘华", "黄仁霞", "辛许波", "田浩", "孙维", "陈世龙", "杨锦",
+            "丁东", "钟振", "杨家桤", "姜林福", "阎涛", "雷霆", "林承", "何新", "祁明辉", "付兴武",
+            "李伟", "宋仁杰", "曹本伟", "郑永彪", "刘畅", "明平喜", "曾德灿", "刘志明", "张少川", "黄威",
+            "任威", "赵违达", "范明亮", "陈剑东", "姚思杰", "姜方成", "左义得", "王凯", "张祥飞", "湛继宗",
+            "喻亚东", "张平", "杨楚侦", "吴徐荃", "梅东伟", "陈元凯", "周勇", "刘敏", "程文昊", "晏加林",
+            "黄泓滨", "熊楠峰", "刘晨", "戴超", "曹秋业", "白阳", "杜鑫", "黄嘉伟", "邓腾芸", "王子淳",
+            "李如杰", "梁海", "冯幼", "杨凯凯", "梅俊", "程帆", "张淑蓉", "何露", "肖颖", "柯审海",
+            "郑长久", "李函颖", "郭泽阳", "肖彼得", "左立雄", "喻卫玲", "叶金艳", "周静涛", "周博", "刘源伟",
+            "彭光锋", "刘虎", "段佳裕", "曾宪武", "陈新炫", "冯天鹏", "胡明明", "高枕", "周梦洁", "丁晓明",
+            "郭俊安", "陈宇", "李赟", "刘雨洋", "陈豪", "李梦", "袁旭", "刘梦萍", "李剑", "高越",
+            "刘鑫", "程焱", "刘天宇", "王鹏", "张妍", "代喜鑫", "任文珍", "彭文迪", "罗桂霞", "郑敏",
+            "沈晓琦", "张朦", "程冰", "武文昌", "吴龙", "孙锦", "姚红", "王小涛", "张其", "李海强",
+            "周和安", "曾吉龙", "余锟", "王恒", "杨雨东", "徐盛豪", "桂霖", "朱怀枕", "邹涛", "许涛",
+            "张萌", "靖博洋", "张博", "张福英", "叶桃珍"
+        ];
+        const winners = [];
+
+        function drawLottery(count, prizeImgId) {
+            const lotterySound = document.getElementById('lottery-sound');
+            const fireworkSound = document.getElementById('firework-sound');
+            lotterySound.play();
+            setTimeout(() => {
+                fireworkSound.play();
+                const remainingParticipants = participants.filter(p => !winners.includes(p));
+                const currentWinners = [];
+                for (let i = 0; i < count; i++) {
+                    if (remainingParticipants.length === 0) break;
+                    const randomIndex = Math.floor(Math.random() * remainingParticipants.length);
+                    const winner = remainingParticipants.splice(randomIndex, 1)[0];
+                    currentWinners.push(winner);
+                    winners.push(winner);
+                }
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML += `<p>${prizeImgId === 'apple-earphone' ? '三等奖' : prizeImgId === 'apple-watch' ? '二等奖' : '一等奖'}中奖人员：${currentWinners.join('、')}</p>`;
+
+                // 隐藏之前的奖品图片
+                if (prizeImgId === 'apple-watch') {
+                    document.getElementById('apple-earphone').style.display = 'none';
+                } else if (prizeImgId === 'apple-iphone') {
+                    document.getElementById('apple-earphone').style.display = 'none';
+                    document.getElementById('apple-watch').style.display = 'none';
+                }
+
+                document.getElementById(prizeImgId).style.display = 'block';
+                if (prizeImgId === 'apple-earphone') {
+                    document.getElementById('second-prize').disabled = false;
+                } else if (prizeImgId === 'apple-watch') {
+                    document.getElementById('first-prize').disabled = false;
+                }
+            }, 2000);
+        }
+
+        document.getElementById('third-prize').addEventListener('click', () => {
+            drawLottery(5, 'apple-earphone');
+            document.getElementById('third-prize').disabled = true;
+        });
+
+        document.getElementById('second-prize').addEventListener('click', () => {
+            drawLottery(3, 'apple-watch');
+            document.getElementById('second-prize').disabled = true;
+        });
+
+        document.getElementById('first-prize').addEventListener('click', () => {
+            drawLottery(1, 'apple-iphone');
+            document.getElementById('first-prize').disabled = true;
+        });
+    </script>
+</body>
+
+</html>
+    
