@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>俄罗斯方块</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(17, minmax(6px, 2vw));
+            grid-template-rows: repeat(17, minmax(6px, 2vw));
+            gap: 1px;
+            background-color: #333;
+        }
+
+        .cell {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        .block {
+            background-color: #ff6600;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .control-button {
+            padding: 10px;
+            font-size: 14px;
+            background-color: #ccc;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #score {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="score">得分: 0</div>
+    <div id="game-board"></div>
+    <div class="controls">
+        <button class="control-button" id="left-button">←</button>
+        <button class="control-button" id="rotate-button">↑</button>
+        <button class="control-button" id="right-button">→</button>
+        <button class="control-button" id="down-button" style="grid-column: 2;">↓</button>
+    </div>
+    <script>
+        const gameBoard = document.getElementById('game-board');
+        const scoreElement = document.getElementById('score');
+        const rows = 17;
+        const cols = 17;
+        const board = Array.from({ length: rows }, () => Array(cols).fill(0));
+        let score = 0;
+
+        function createBoard() {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        const shapes = [
+            [[1, 1, 1, 1]],
+            [[1, 1], [1, 1]],
+            [[1, 1, 0], [0, 1, 1]],
+            [[0, 1, 1], [1, 1, 0]],
+            [[1, 1, 1], [0, 1, 0]],
+            [[1, 1, 1], [1, 0, 0]],
+            [[1, 1, 1], [0, 0, 1]]
+        ];
+
+        let currentShape;
+        let currentX;
+        let currentY;
+
+        function newShape() {
+            const randomIndex = Math.floor(Math.random() * shapes.length);
+            currentShape = shapes[randomIndex];
+            currentX = Math.floor(cols / 2) - Math.floor(currentShape[0].length / 2);
+            currentY = 0;
+        }
+
+        function drawShape() {
+            currentShape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell) {
+                        const index = (currentY + y) * cols + (currentX + x);
+                        const cellElement = gameBoard.children[index];
+                        cellElement.classList.add('block');
+                    }
+                });
+            });
+        }
+
+        function clearShape() {
+            currentShape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell) {
+                        const index = (currentY + y) * cols + (currentX + x);
+                        const cellElement = gameBoard.children[index];
+                        cellElement.classList.remove('block');
+                    }
+                });
+            });
+        }
+
+        function canMove(dx, dy) {
+            return currentShape.every((row, y) => {
+                return row.every((cell, x) => {
+                    if (!cell) return true;
+                    const newX = currentX + x + dx;
+                    const newY = currentY + y + dy;
+                    return newX >= 0 && newX < cols && newY < rows && (!board[newY] || !board[newY][newX]);
+                });
+            });
+        }
+
+        function moveShape(dx, dy) {
+            if (canMove(dx, dy)) {
+                clearShape();
+                currentX += dx;
+                currentY += dy;
+                drawShape();
+            }
+        }
+
+        function mergeShape() {
+            currentShape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell) {
+                        board[currentY + y][currentX + x] = 1;
+                    }
+                });
+            });
+        }
+
+        function checkLines() {
+            let linesCleared = 0;
+            for (let y = rows - 1; y >= 0; y--) {
+                if (board[y].every(cell => cell)) {
+                    board.splice(y, 1);
+                    board.unshift(Array(cols).fill(0));
+                    linesCleared++;
+                    y++; 
+                }
+            }
+            updateScore(linesCleared);
+            updateBoardDisplay();
+        }
+
+        function updateScore(linesCleared) {
+            switch (linesCleared) {
+                case 1:
+                    score += 1;
+                    break;
+                case 2:
+                    score += 3;
+                    break;
+                case 3:
+                    score += 6;
+                    break;
+                case 4:
+                    score += 10;
+                    break;
+            }
+            scoreElement.textContent = `得分: ${score}`;
+        }
+
+        function updateBoardDisplay() {
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const index = y * cols + x;
+                    const cellElement = gameBoard.children[index];
+                    if (board[y][x]) {
+                        cellElement.classList.add('block');
+                    } else {
+                        cellElement.classList.remove('block');
+                    }
+                }
+            }
+        }
+
+        function rotateShape() {
+            const rotatedShape = [];
+            const height = currentShape.length;
+            const width = currentShape[0].length;
+
+            for (let x = 0; x < width; x++) {
+                const newRow = [];
+                for (let y = height - 1; y >= 0; y--) {
+                    newRow.push(currentShape[y][x]);
+                }
+                rotatedShape.push(newRow);
+            }
+
+            const tempShape = currentShape;
+            currentShape = rotatedShape;
+
+            if (!canMove(0, 0)) {
+                currentShape = tempShape;
+            }
+        }
+
+        function gameLoop() {
+            if (canMove(0, 1)) {
+                moveShape(0, 1);
+            } else {
+                mergeShape();
+                checkLines();
+                newShape();
+                if (!canMove(0, 0)) {
+                    alert(`游戏结束！你的得分是: ${score}`);
+                    location.reload();
+                }
+            }
+        }
+
+        createBoard();
+        newShape();
+        drawShape();
+
+        setInterval(gameLoop, 500);
+
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case 'ArrowLeft':
+                    moveShape(-1, 0);
+                    break;
+                case 'ArrowRight':
+                    moveShape(1, 0);
+                    break;
+                case 'ArrowDown':
+                    moveShape(0, 1);
+                    break;
+                case 'ArrowUp':
+                    clearShape();
+                    rotateShape();
+                    drawShape();
+                    break;
+            }
+        });
+
+        const leftButton = document.getElementById('left-button');
+        const rightButton = document.getElementById('right-button');
+        const downButton = document.getElementById('down-button');
+        const rotateButton = document.getElementById('rotate-button');
+
+        leftButton.addEventListener('click', () => moveShape(-1, 0));
+        rightButton.addEventListener('click', () => moveShape(1, 0));
+        downButton.addEventListener('click', () => moveShape(0, 1));
+        rotateButton.addEventListener('click', () => {
+            clearShape();
+            rotateShape();
+            drawShape();
+        });
+    </script>
+</body>
+
+</html>
+    
